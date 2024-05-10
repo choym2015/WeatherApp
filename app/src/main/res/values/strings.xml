@@ -5,4 +5,7 @@
     <string name="shared_pref_name">MySharedPref</string>
     <string name="latitude_shared_pref_key">lat</string>
     <string name="longitude_shared_pref_key">lon</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="sunset">Sunset</string>
+
 </resources>

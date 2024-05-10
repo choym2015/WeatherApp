@@ -78,7 +78,9 @@ class WeatherViewModel: ViewModel() {
             maxTempInFahrenheit = "Max: " + TempUtils.kelvinToFahrenheit(weatherInfo.main.temp_max),
             weatherIcon = "https://openweathermap.org/img/wn/${weatherInfo.weather[0].icon}@2x.png",
             weatherDesc = weatherInfo.weather[0].description.capitalizeWords(),
-            cityName = weatherInfo.name.capitalizeWords()
+            cityName = weatherInfo.name.capitalizeWords(),
+            sunriseTime = DateUtils.unixTimestampToString(weatherInfo.sys.sunrise),
+            sunsetTime = DateUtils.unixTimestampToString(weatherInfo.sys.sunset)
         )
 
         weatherDataMutableLiveData.postValue(weatherData)

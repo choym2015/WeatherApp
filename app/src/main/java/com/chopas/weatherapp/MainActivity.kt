@@ -4,14 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.inputmethod.InputMethodManager
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
 import com.chopas.weatherapp.databinding.ActivityMainBinding
 import com.chopas.weatherapp.model.WeatherData
 import com.chopas.weatherapp.viewmodel.WeatherViewModel
@@ -19,9 +18,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,6 +44,10 @@ class MainActivity : AppCompatActivity() {
         setViewModelListeners()
         setSearchViewListener()
 
+        loadWeather()
+    }
+
+    private fun loadWeather() {
         val lastLat = sharedPref.getString(getString(R.string.latitude_shared_pref_key), null)
         val lastLon = sharedPref.getString(getString(R.string.longitude_shared_pref_key), null)
 
@@ -76,6 +77,7 @@ class MainActivity : AppCompatActivity() {
                     putString(getString(R.string.longitude_shared_pref_key), longitude)
                     apply()
                 }
+
                 weatherViewModel.getWeather(latitude, longitude)
             }
         }
@@ -98,6 +100,12 @@ class MainActivity : AppCompatActivity() {
         weatherViewModel.weatherDataMutableLiveData.observe(this) { weatherData ->
             updateViews(weatherData)
         }
+
+        weatherViewModel.progressBarLiveData.observe(this) { isLoading ->
+            if (isLoading) {
+                binding.loadingLinearLayout.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun setSearchViewListener() {
@@ -116,15 +124,19 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
         })
+
+        binding.weatherInfoLinearLayout.setOnClickListener {
+            binding.citySearchView.clearFocus()
+        }
     }
 
     private fun updateViews(weatherData: WeatherData?) {
         weatherData?.let {
-            val requestOptions = RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-
             GlobalScope.launch(Dispatchers.Main) {
-                Glide.with(this@MainActivity).load(it.weatherIcon).apply(requestOptions).into(binding.weatherIconImageView)
+                Glide.with(this@MainActivity)
+                    .load(it.weatherIcon)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(binding.weatherIconImageView)
 
                 binding.dateTimeTextView.text = it.dateTime
                 binding.weatherFahrenheitTextView.text = it.tempInFahrenheit
@@ -133,8 +145,14 @@ class MainActivity : AppCompatActivity() {
                 binding.weatherFeelsTextView.text = it.feelsLikeTempInFahrenheit
                 binding.weatherDescTextView.text = it.weatherDesc
                 binding.cityTextView.text = it.cityName
-            }
+                binding.layoutSunriseSunset.sunriseTextView.text = it.sunriseTime
+                binding.layoutSunriseSunset.sunsetTextView.text = it.sunsetTime
 
+                binding.citySearchView.setQuery(it.cityName, false)
+                binding.citySearchView.clearFocus()
+
+                binding.loadingLinearLayout.visibility = View.GONE
+            }
         } ?: run {
             //show error message
         }

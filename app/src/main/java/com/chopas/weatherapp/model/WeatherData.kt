@@ -9,5 +9,7 @@ data class WeatherData(
     var location: String = "",
     var weatherIcon: String = "",
     var weatherDesc: String = "",
-    var cityName: String = ""
+    var cityName: String = "",
+    var sunriseTime: String = "",
+    var sunsetTime: String = ""
 )
