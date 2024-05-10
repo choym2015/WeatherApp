@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">WeatherApp</string>
+    <string name="search_view_query_hint">Search City</string>
+    <string name="search_view_suggestion_text">Use My Location</string>
 </resources>

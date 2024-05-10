@@ -41,6 +41,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -55,6 +59,10 @@ dependencies {
     //retrofit
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    //Glide image loading
+    implementation("com.github.bumptech.glide:glide:4.11.0")
 
     //testing
     testImplementation("junit:junit:4.13.2")

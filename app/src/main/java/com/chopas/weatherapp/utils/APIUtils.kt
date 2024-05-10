@@ -1,4 +1,4 @@
-package com.chopas.weatherapp.Utils
+package com.chopas.weatherapp.utils
 
 class APIUtils {
     companion object {
