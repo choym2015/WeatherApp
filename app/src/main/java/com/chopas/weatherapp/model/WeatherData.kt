@@ -8,5 +8,6 @@ data class WeatherData(
     var maxTempInFahrenheit: String = "",
     var location: String = "",
     var weatherIcon: String = "",
-    var weatherDesc: String = ""
+    var weatherDesc: String = "",
+    var cityName: String = ""
 )

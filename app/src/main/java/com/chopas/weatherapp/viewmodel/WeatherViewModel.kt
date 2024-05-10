@@ -15,16 +15,10 @@ class WeatherViewModel: ViewModel() {
     val weatherDataMutableLiveData = MutableLiveData<WeatherData>()
     val progressBarLiveData = MutableLiveData<Boolean>()
 
-    fun getWeather(city: String? = null) = viewModelScope.launch(Dispatchers.IO) {
+    fun getWeather(lat: String, lon: String) = viewModelScope.launch(Dispatchers.IO) {
         progressBarLiveData.postValue(true)
 
-        val apiCall = if (city == null) { // if there is no city defined
-            RetrofitInstance.api.getCurrentWeather("37.55", "127")
-        } else { // user has defined a city
-            RetrofitInstance.api.getCurrentWeather("37.55", "127")
-        }
-
-        val response = apiCall.execute()
+        val response = RetrofitInstance.api.getCurrentWeather(lat, lon).execute()
 
         if (response.isSuccessful) {
             progressBarLiveData.postValue(false)
@@ -42,7 +36,8 @@ class WeatherViewModel: ViewModel() {
                     minTempInFahrenheit = "Min: " + TempUtils.kelvinToFahrenheit(weatherInfo.main.temp_min),
                     maxTempInFahrenheit = "Max: " + TempUtils.kelvinToFahrenheit(weatherInfo.main.temp_max),
                     weatherIcon = "https://openweathermap.org/img/wn/${weatherInfo.weather[0].icon}@2x.png",
-                    weatherDesc = weatherInfo.weather[0].description.capitalizeWords()
+                    weatherDesc = weatherInfo.weather[0].description.capitalizeWords(),
+                    cityName = weatherInfo.name.capitalizeWords()
                 )
 
                 weatherDataMutableLiveData.postValue(weatherData)
