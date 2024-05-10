@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.app.ActivityCompat
@@ -16,6 +17,11 @@ import com.chopas.weatherapp.model.WeatherData
 import com.chopas.weatherapp.viewmodel.WeatherViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -97,9 +103,10 @@ class MainActivity : AppCompatActivity() {
     private fun setSearchViewListener() {
         binding.citySearchView.setOnQueryTextListener(object: OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-
                 query?.let { city ->
-
+                    GlobalScope.launch(Dispatchers.IO) {
+                        weatherViewModel.getWeatherByCity(city)
+                    }
                 }
 
                 return true
@@ -116,15 +123,18 @@ class MainActivity : AppCompatActivity() {
             val requestOptions = RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
 
-            Glide.with(this).load(it.weatherIcon).apply(requestOptions).into(binding.weatherIconImageView)
+            GlobalScope.launch(Dispatchers.Main) {
+                Glide.with(this@MainActivity).load(it.weatherIcon).apply(requestOptions).into(binding.weatherIconImageView)
 
-            binding.dateTimeTextView.text = it.dateTime
-            binding.weatherFahrenheitTextView.text = it.tempInFahrenheit
-            binding.weatherMinTextView.text = it.minTempInFahrenheit
-            binding.weatherMaxTextView.text = it.maxTempInFahrenheit
-            binding.weatherFeelsTextView.text = it.feelsLikeTempInFahrenheit
-            binding.weatherDescTextView.text = it.weatherDesc
-            binding.cityTextView.text = it.cityName
+                binding.dateTimeTextView.text = it.dateTime
+                binding.weatherFahrenheitTextView.text = it.tempInFahrenheit
+                binding.weatherMinTextView.text = it.minTempInFahrenheit
+                binding.weatherMaxTextView.text = it.maxTempInFahrenheit
+                binding.weatherFeelsTextView.text = it.feelsLikeTempInFahrenheit
+                binding.weatherDescTextView.text = it.weatherDesc
+                binding.cityTextView.text = it.cityName
+            }
+
         } ?: run {
             //show error message
         }
