@@ -7,5 +7,9 @@
     <string name="longitude_shared_pref_key">lon</string>
     <string name="sunrise">Sunrise</string>
     <string name="sunset">Sunset</string>
+    <string name="permission_denied_message">Please allow location permission in order to retrieve accurate information </string>
+    <string name="unable_to_find_information_message">Unable to fetch weather information.\n Please try again</string>
+    <string name="default_missing_location_message">Please search a city \n\nor \n\nenable location permission</string>
+
 
 </resources>

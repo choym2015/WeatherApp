@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 class WeatherViewModel: ViewModel() {
     val weatherDataMutableLiveData = MutableLiveData<WeatherData>()
     val progressBarLiveData = MutableLiveData<Boolean>()
+    val errorLiveData = MutableLiveData<Boolean>()
 
     fun getWeather(lat: String, lon: String) = viewModelScope.launch(Dispatchers.IO) {
         progressBarLiveData.postValue(true)
@@ -27,17 +28,16 @@ class WeatherViewModel: ViewModel() {
 
             response.body()?.let { weatherInfo ->
                 if (weatherInfo.weather.isEmpty()) {
-                    //handle error here
+                    errorLiveData.postValue(true)
                     return@let
                 }
 
                 parseWeatherInfo(weatherInfo)
             } ?: run {
-               //handle error
+                errorLiveData.postValue(true)
             }
         } else {
-            progressBarLiveData.postValue(false)
-            //show error
+            errorLiveData.postValue(true)
         }
     }
 
@@ -50,7 +50,7 @@ class WeatherViewModel: ViewModel() {
 
             response.body()?.let { weatherInfo ->
                 if (weatherInfo.weather.isEmpty()) {
-                    //handle error here
+                    errorLiveData.postValue(true)
                     return@let
                 }
 
@@ -61,11 +61,10 @@ class WeatherViewModel: ViewModel() {
                 }
                 parseWeatherInfo(weatherInfo)
             } ?: run {
-                //handle error
+                errorLiveData.postValue(true)
             }
         } else {
-            progressBarLiveData.postValue(false)
-            //show error
+            errorLiveData.postValue(true)
         }
     }
 

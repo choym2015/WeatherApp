@@ -20,6 +20,7 @@ import com.chopas.weatherapp.model.WeatherData
 import com.chopas.weatherapp.viewmodel.WeatherViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         sharedPref = this.getSharedPreferences(getString(R.string.shared_pref_name), Context.MODE_PRIVATE)
 
         setViewModelListeners()
-        setSearchViewListener()
+        setViewListeners()
         loadCitySuggestions()
 
         loadWeather()
@@ -109,7 +110,10 @@ class MainActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 fetchLocation()
             } else {
-//                Toast.makeText(this@MainActivity, "Camera Permission Denied", Toast.LENGTH_SHORT).show()
+                binding.layoutDefaultMissingLocation.root.visibility = View.VISIBLE
+                binding.weatherInfoLinearLayout.visibility = View.GONE
+                val snackbar = Snackbar.make(binding.root, R.string.permission_denied_message, Snackbar.LENGTH_SHORT)
+                snackbar.show()
             }
         }
     }
@@ -124,9 +128,21 @@ class MainActivity : AppCompatActivity() {
                 binding.loadingLinearLayout.visibility = View.VISIBLE
             }
         }
+
+        weatherViewModel.errorLiveData.observe(this) {
+            GlobalScope.launch(Dispatchers.Main) {
+                binding.citySearchView.clearFocus()
+
+                binding.layoutSearchSuggestion.root.visibility = View.GONE
+                binding.loadingLinearLayout.visibility = View.GONE
+
+                val snackbar = Snackbar.make(binding.root, R.string.unable_to_find_information_message, Snackbar.LENGTH_SHORT)
+                snackbar.show()
+            }
+        }
     }
 
-    private fun setSearchViewListener() {
+    private fun setViewListeners() {
         binding.citySearchView.setOnQueryTextListener(object: OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 binding.layoutSearchSuggestion.root.visibility = View.GONE
@@ -148,22 +164,18 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        binding.citySearchView.setOnQueryTextFocusChangeListener { _, p1 ->
+            if (p1) {
+                binding.layoutSearchSuggestion.root.visibility = View.VISIBLE
+            } else {
+                binding.layoutSearchSuggestion.root.visibility = View.GONE
+            }
+        }
+
         binding.weatherInfoLinearLayout.setOnClickListener {
             binding.citySearchView.clearFocus()
         }
-
-        binding.citySearchView.setOnQueryTextFocusChangeListener(object: OnFocusChangeListener {
-            override fun onFocusChange(p0: View?, p1: Boolean) {
-                if (p1) {
-                    binding.layoutSearchSuggestion.root.visibility = View.VISIBLE
-                } else {
-                    binding.layoutSearchSuggestion.root.visibility = View.GONE
-                }
-            }
-        })
     }
-
-
 
     private fun updateViews(weatherData: WeatherData?) {
         weatherData?.let {
@@ -185,11 +197,12 @@ class MainActivity : AppCompatActivity() {
                 binding.citySearchView.setQuery(it.cityName, false)
                 binding.citySearchView.clearFocus()
 
+                binding.layoutDefaultMissingLocation.root.visibility = View.GONE
+                binding.weatherInfoLinearLayout.visibility = View.VISIBLE
+
                 binding.layoutSearchSuggestion.root.visibility = View.GONE
                 binding.loadingLinearLayout.visibility = View.GONE
             }
-        } ?: run {
-            //show error message
         }
     }
 }
