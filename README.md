@@ -18,3 +18,6 @@ Simple weather application showing live weather data of either
 
 ## Installing
 * Please add openweathermap API_KEY to local properties with key "key" in order to run the application successfully
+
+https://github.com/choym2015/WeatherApp/assets/66449575/56c17b31-02ce-49ec-a0b6-96201722750d
+
