@@ -35,6 +35,10 @@
         android:elevation="10dp"
         android:background="@drawable/rounded_shadow_background"
         app:queryHint="@string/search_view_query_hint"
+        app:iconifiedByDefault="false"
+        app:searchHintIcon="@null"
+        app:closeIcon="@drawable/baseline_clear_24"
+        app:searchIcon="@drawable/baseline_search_24"
         />
 
     <ScrollView
@@ -133,6 +137,18 @@
         </LinearLayout>
     </ScrollView>
 
-
+    <include
+        android:id="@+id/layout_search_suggestion"
+        layout="@layout/layout_search_suggestion_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@+id/city_search_view"
+        app:layout_constraintStart_toStartOf="@+id/city_search_view"
+        app:layout_constraintTop_toBottomOf="@id/city_search_view"
+        android:elevation="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:visibility="gone"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,13 +5,17 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.view.View.OnFocusChangeListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.chopas.weatherapp.adapter.SuggestionAdapter
 import com.chopas.weatherapp.databinding.ActivityMainBinding
+import com.chopas.weatherapp.model.SuggestionData
 import com.chopas.weatherapp.model.WeatherData
 import com.chopas.weatherapp.viewmodel.WeatherViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -25,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherViewModel: WeatherViewModel
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var suggestionAdapter: SuggestionAdapter
 
     companion object {
         private const val LOCATION_PERMISSION_CODE = 101
@@ -43,8 +48,21 @@ class MainActivity : AppCompatActivity() {
 
         setViewModelListeners()
         setSearchViewListener()
+        loadCitySuggestions()
 
         loadWeather()
+    }
+
+    private fun loadCitySuggestions() {
+        val suggestionList = arrayListOf<SuggestionData>(SuggestionData(R.drawable.baseline_my_location_24, getString(R.string.search_view_suggestion_text)))
+        suggestionAdapter = SuggestionAdapter(suggestionList)
+
+        binding.layoutSearchSuggestion.suggestionRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.layoutSearchSuggestion.suggestionRecyclerView.adapter = suggestionAdapter
+
+        suggestionAdapter.onItemClick = {
+            fetchLocation()
+        }
     }
 
     private fun loadWeather() {
@@ -111,7 +129,11 @@ class MainActivity : AppCompatActivity() {
     private fun setSearchViewListener() {
         binding.citySearchView.setOnQueryTextListener(object: OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                binding.layoutSearchSuggestion.root.visibility = View.GONE
+
                 query?.let { city ->
+                    binding.citySearchView.clearFocus()
+
                     GlobalScope.launch(Dispatchers.IO) {
                         weatherViewModel.getWeatherByCity(city)
                     }
@@ -121,6 +143,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                binding.layoutSearchSuggestion.root.visibility = View.VISIBLE
                 return false
             }
         })
@@ -128,7 +151,19 @@ class MainActivity : AppCompatActivity() {
         binding.weatherInfoLinearLayout.setOnClickListener {
             binding.citySearchView.clearFocus()
         }
+
+        binding.citySearchView.setOnQueryTextFocusChangeListener(object: OnFocusChangeListener {
+            override fun onFocusChange(p0: View?, p1: Boolean) {
+                if (p1) {
+                    binding.layoutSearchSuggestion.root.visibility = View.VISIBLE
+                } else {
+                    binding.layoutSearchSuggestion.root.visibility = View.GONE
+                }
+            }
+        })
     }
+
+
 
     private fun updateViews(weatherData: WeatherData?) {
         weatherData?.let {
@@ -147,10 +182,10 @@ class MainActivity : AppCompatActivity() {
                 binding.cityTextView.text = it.cityName
                 binding.layoutSunriseSunset.sunriseTextView.text = it.sunriseTime
                 binding.layoutSunriseSunset.sunsetTextView.text = it.sunsetTime
-
                 binding.citySearchView.setQuery(it.cityName, false)
                 binding.citySearchView.clearFocus()
 
+                binding.layoutSearchSuggestion.root.visibility = View.GONE
                 binding.loadingLinearLayout.visibility = View.GONE
             }
         } ?: run {
