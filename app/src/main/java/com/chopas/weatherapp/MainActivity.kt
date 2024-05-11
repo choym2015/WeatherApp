@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
-import android.view.View.OnFocusChangeListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.app.ActivityCompat
@@ -29,19 +28,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherViewModel: WeatherViewModel
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var suggestionAdapter: SuggestionAdapter
+
+    //for accessing user location
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     companion object {
         private const val LOCATION_PERMISSION_CODE = 101
         lateinit var sharedPref: SharedPreferences
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
 
         weatherViewModel = ViewModelProvider(this).get(WeatherViewModel::class.java)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -54,8 +55,12 @@ class MainActivity : AppCompatActivity() {
         loadWeather()
     }
 
+    /**
+     * Populate list of suggestions (limited to "Use My Location" for this exercise)
+     * Instantiate a SuggestionAdapter and set bind it to suggestion recycler view
+     */
     private fun loadCitySuggestions() {
-        val suggestionList = arrayListOf<SuggestionData>(SuggestionData(R.drawable.baseline_my_location_24, getString(R.string.search_view_suggestion_text)))
+        val suggestionList = arrayListOf(SuggestionData(R.drawable.baseline_my_location_24, getString(R.string.search_view_suggestion_text)))
         suggestionAdapter = SuggestionAdapter(suggestionList)
 
         binding.layoutSearchSuggestion.suggestionRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -66,6 +71,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Check if there is a lat & lon saved in SharedPreference.
+     * If there is a saved value, load the weather using lat and lon.
+     *
+     * If not, fetch weather using user's location
+     */
     private fun loadWeather() {
         val lastLat = sharedPref.getString(getString(R.string.latitude_shared_pref_key), null)
         val lastLon = sharedPref.getString(getString(R.string.longitude_shared_pref_key), null)
@@ -76,6 +87,15 @@ class MainActivity : AppCompatActivity() {
             fetchLocation()
         }
     }
+
+    /**
+     * Check for location permissions.
+     *
+     * If permission is not granted, request permission and show appropriate message
+     * If permission is granted, get coordinates and fetch weather
+     *
+     * Save coordinates in SharedPreferences
+     */
 
     private fun fetchLocation() {
         val task = fusedLocationProviderClient.lastLocation
@@ -118,6 +138,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Set WeatherViewModel listeners
+     */
     private fun setViewModelListeners() {
         weatherViewModel.weatherDataMutableLiveData.observe(this) { weatherData ->
             updateViews(weatherData)
@@ -142,6 +165,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Set additional view listeners
+     */
     private fun setViewListeners() {
         binding.citySearchView.setOnQueryTextListener(object: OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -177,6 +203,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Update views appropriately with latest WeatherData object
+     *
+     * @param weatherData Latest WeatherData object
+     */
     private fun updateViews(weatherData: WeatherData?) {
         weatherData?.let {
             GlobalScope.launch(Dispatchers.Main) {

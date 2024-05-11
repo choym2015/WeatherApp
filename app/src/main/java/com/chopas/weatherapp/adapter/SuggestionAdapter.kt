@@ -5,11 +5,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.model.AdapterClass
 import androidx.recyclerview.widget.RecyclerView
 import com.chopas.weatherapp.R
 import com.chopas.weatherapp.model.SuggestionData
 
+/**
+ * Custom RecyclerView Adapter for showing city suggestions.
+ *
+ * It would be better if I were able to show entire list of cities,
+ * but for the simplicity of this exercise, the dataset is limited to 1 = "Use My Location"
+ *
+ * @param suggestionList List of cities to suggest (limited to 1 for this exercise)
+ */
 class SuggestionAdapter(private val suggestionList: ArrayList<SuggestionData>): RecyclerView.Adapter<SuggestionAdapter.ViewHolderClass>() {
 
     var onItemClick: ((SuggestionData) -> Unit)? = null
